@@ -1316,60 +1316,50 @@ def pages_for(role):
 
 # LOGIN INTERFACE
 
+USERS_FILE = BASE / "users.json"
+
 
 def render_login():
-
     show_banner()
 
-    st.subheader(
-        " Security & Access Control Gateway"
-    )
-
-    st.warning(
-        "Demonstration login only. "
-        "Selecting a role does not "
-        "authenticate user identity."
-    )
+    st.subheader("Security & Access Control Gateway")
+    st.write("Enter your username and password to continue.")
 
     with st.form("login"):
-
-        staff_id = st.text_input(
-            "Staff Identification Number"
+        username = st.text_input("Username")
+        password = st.text_input(
+            "Password",
+            type="password"
         )
 
-        role = st.selectbox(
-            "Select Clearance Group",
-            [
-                "Administrator",
-                "Safety Officer",
-                "Mining Engineer",
-                "Maintenance Engineer",
-                "Manager"
-            ]
-        )
-
-        clicked = st.form_submit_button(
-            "Unlock Dashboard Interface"
-        )
+        clicked = st.form_submit_button("Login")
 
     if clicked:
+        try:
+            with open(USERS_FILE, "r", encoding="utf-8") as file:
+                users = json.load(file)
 
-        if not staff_id.strip():
+        except (FileNotFoundError, json.JSONDecodeError):
+            st.error("User database is missing or invalid.")
+            return
 
-            st.error(
-                "Staff Identification Number "
-                "is required."
-            )
+        user = users.get(username.strip())
 
-        else:
+        if user and user.get("password") == password:
+            role = user.get("role")
 
             st.session_state.update(
                 auth_token=True,
-                id_tag=staff_id.strip(),
+                id_tag=username.strip(),
                 tier=role
             )
 
             st.rerun()
+
+        else:
+            st.error("Invalid username or password.")
+
+
 
 # MAIN DASHBOARD
 
