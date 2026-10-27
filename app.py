@@ -4,7 +4,7 @@ import altair as alt
 import base64
 import importlib
 import sqlite3
-
+import json
 from pathlib import Path
 from contextlib import contextmanager
 
